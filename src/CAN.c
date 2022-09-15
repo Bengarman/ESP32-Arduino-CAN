@@ -171,6 +171,7 @@ int CAN_init() {
 
 	// enable module
 	DPORT_SET_PERI_REG_MASK(DPORT_PERIP_CLK_EN_REG, DPORT_CAN_CLK_EN);
+	DPORT_SET_PERI_REG_MASK(DPORT_PERIP_RST_EN_REG, DPORT_CAN_RST);
 	DPORT_CLEAR_PERI_REG_MASK(DPORT_PERIP_RST_EN_REG, DPORT_CAN_RST);
 
 	// configure TX pin
@@ -226,7 +227,7 @@ int CAN_init() {
 	MODULE_CAN->BTR1.B.SAM = 0x1;
 
 	// enable all interrupts
-	MODULE_CAN->IER.U = 0xff;
+	MODULE_CAN->IER.U = 0xef;
 
 	 // Set acceptance filter	
 	MODULE_CAN->MOD.B.AFM = __filter.FM;	
@@ -271,9 +272,8 @@ int CAN_write_frame(const CAN_frame_t *p_frame) {
 	CAN_write_frame_phy(p_frame);
 
 	// wait for the frame tx to complete
-	xSemaphoreTake(sem_tx_complete, portMAX_DELAY);
-
-	return 0;
+  	int rc = xSemaphoreTake(sem_tx_complete, 500);
+	return rc;
 }
 
 int CAN_stop() {
